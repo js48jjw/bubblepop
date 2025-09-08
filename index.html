@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Bubble Wrap - Pop Away Your Stress!</title>
+    <!-- Kakao Ad Script -->
+    <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .stat-item {
+            color: white;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .sound-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .sound-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.5;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .bubble-container {
+            flex: 1;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 8px;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .bubble {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.1),
+                inset -2px -2px 4px rgba(0, 0, 0, 0.1),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.8);
+            animation: bubbleFloat 3s ease-in-out infinite;
+        }
+
+        .bubble::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 20%;
+            width: 20%;
+            height: 20%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent);
+            border-radius: 50%;
+        }
+
+        .bubble:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.2),
+                inset -2px -2px 4px rgba(0, 0, 0, 0.1),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .bubble.popping {
+            animation: popAnimation 0.3s ease-out forwards;
+        }
+
+        @keyframes popAnimation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes bubbleFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .bubble.regenerating {
+            animation: regenerate 0.5s ease-out forwards;
+        }
+
+        @keyframes regenerate {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: rippleEffect 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleEffect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .combo-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .combo-indicator.show {
+            animation: comboAnimation 1s ease-out;
+        }
+
+        @keyframes comboAnimation {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .achievement {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+            z-index: 150;
+        }
+
+        .achievement.show {
+            transform: translateX(0);
+        }
+
+        .achievement-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        .achievement-desc {
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        /* Footer styles */
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            text-align: center;
+            color: white;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .footer h2 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .footer p {
+            max-width: 800px;
+            margin: 0 auto 0.5rem;
+            line-height: 1.4;
+            opacity: 0.9;
+            font-size: 0.8rem;
+        }
+
+        .footer-tips {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+        }
+
+        /* Ad container styles */
+        .ad-container {
+            position: fixed;
+            top: 80px;
+            width: 160px;
+            height: 600px;
+            z-index: 999;
+            display: flex !important;
+            align-items: flex-start;
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #leftAd {
+            left: 10px;
+        }
+
+        #rightAd {
+            right: 16px;
+        }
+
+        /* Ad placeholder styling */
+        .ad-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0.75rem 1rem;
+            }
+
+            .title {
+                font-size: 1.1rem;
+            }
+
+            .stats {
+                gap: 0.75rem;
+            }
+
+            .stat-value {
+                font-size: 1.25rem;
+            }
+
+            .stat-label {
+                font-size: 0.75rem;
+            }
+
+            .controls {
+                gap: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.4rem 1rem;
+                font-size: 0.75rem;
+            }
+
+            .sound-toggle {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+            }
+
+            .bubble-container {
+                padding: 1rem;
+                gap: 6px;
+            }
+
+            .bubble {
+                width: 40px;
+                height: 40px;
+            }
+
+            .achievement {
+                bottom: 1rem;
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+            }
+
+            .footer {
+                padding: 0.75rem;
+            }
+
+            .footer h2 {
+                font-size: 0.9rem;
+            }
+
+            .footer p {
+                font-size: 0.75rem;
+            }
+
+            .footer-tips {
+                gap: 0.3rem;
+            }
+
+            .tip-item {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.6rem;
+            }
+
+            /* Hide ads on mobile devices */
+            .ad-container {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1 class="title">
+            <span>🫧</span> Digital Bubble Wrap
+        </h1>
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-value" id="popCount">0</span>
+                <span class="stat-label">Popped</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="comboCount">0</span>
+                <span class="stat-label">Combo</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="timeElapsed">0:00</span>
+                <span class="stat-label">Time</span>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn" onclick="resetGame()">Reset</button>
+            <button class="btn" onclick="toggleAutoPop()">Auto Pop</button>
+            <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <main class="bubble-container" id="bubbleContainer">
+            <!-- Bubbles will be generated here -->
+        </main>
+
+        <footer class="footer">
+            <h2>Your Digital Stress Relief Companion</h2>
+            <p>
+                Welcome to your personal bubble wrap sanctuary! This digital bubble wrap experience is designed to provide you with a satisfying and mindful way to relieve stress, anxiety, and tension.
+            </p>
+            <div class="footer-tips">
+                <div class="tip-item">
+                    <span>🧘</span> Take deep breaths
+                </div>
+                <div class="tip-item">
+                    <span>⏱️</span> 5 minutes of mindful popping
+                </div>
+                <div class="tip-item">
+                    <span>🎯</span> Beat your combo score
+                </div>
+                <div class="tip-item">
+                    <span>😌</span> Relax and focus
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="combo-indicator" id="comboIndicator"></div>
+    
+    <div class="achievement" id="achievement">
+        <div class="achievement-title" id="achievementTitle"></div>
+        <div class="achievement-desc" id="achievementDesc"></div>
+    </div>
+
+    <!-- Left Ads -->
+    <div id="leftAd" class="ad-container">
+        <ins class="kakao_ad_area" style="display: block;" 
+             data-ad-unit="DAN-FJ7VLmJFYNLGfIs8"
+             data-ad-width="160"
+             data-ad-height="600"></ins>
+        <div class="ad-placeholder">Ad Loading...</div>
+    </div>
+    
+    <!-- Right Ads -->
+    <div id="rightAd" class="ad-container">
+        <ins class="kakao_ad_area" style="display: block;" 
+             data-ad-unit="DAN-FVnbjt5eST1QEQ8w"
+             data-ad-width="160"
+             data-ad-height="600"></ins>
+        <div class="ad-placeholder">Ad Loading...</div>
+    </div>
+
+    <script>
+        // Game state
+        let popCount = 0;
+        let comboCount = 0;
+        let lastPopTime = 0;
+        let startTime = Date.now();
+        let soundEnabled = true;
+        let autoPopMode = false;
+        let autoPopInterval = null;
+
+        // Audio context for sound effects
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Sound effect generator
+        function playPopSound(frequency = 800) {
+            if (!soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        // Create bubble element
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.dataset.popped = 'false';
+            
+            // Random size variation
+            const size = 40 + Math.random() * 15;
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            
+            // Random animation delay
+            bubble.style.animationDelay = `${Math.random() * 3}s`;
+            
+            bubble.addEventListener('click', handleBubblePop);
+            bubble.addEventListener('touchstart', handleBubblePop);
+            
+            return bubble;
+        }
+
+        // Handle bubble pop
+        function handleBubblePop(e) {
+            e.preventDefault();
+            const bubble = e.currentTarget;
+            
+            if (bubble.dataset.popped === 'true') return;
+            
+            bubble.dataset.popped = 'true';
+            bubble.classList.add('popping');
+            
+            // Update stats
+            popCount++;
+            updatePopCount();
+            
+            // Check combo
+            const currentTime = Date.now();
+            if (currentTime - lastPopTime < 1000) {
+                comboCount++;
+                updateComboCount();
+                
+                if (comboCount >= 10) {
+                    showComboIndicator(`${comboCount}x COMBO!`);
+                    checkAchievements();
+                }
+            } else {
+                comboCount = 1;
+                updateComboCount();
+            }
+            lastPopTime = currentTime;
+            
+            // Play sound with slight pitch variation
+            const frequency = 600 + Math.random() * 400;
+            playPopSound(frequency);
+            
+            // Create ripple effect
+            createRipple(e);
+            
+            // Regenerate bubble after delay
+            setTimeout(() => {
+                regenerateBubble(bubble);
+            }, 1000 + Math.random() * 2000);
+        }
+
+        // Regenerate bubble
+        function regenerateBubble(bubble) {
+            bubble.classList.remove('popping');
+            bubble.classList.add('regenerating');
+            bubble.dataset.popped = 'false';
+            
+            setTimeout(() => {
+                bubble.classList.remove('regenerating');
+            }, 500);
+        }
+
+        // Create ripple effect
+        function createRipple(e) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            
+            const rect = e.currentTarget.getBoundingClientRect();
+            const size = 20;
+            
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+            ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+            
+            e.currentTarget.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+
+        // Update UI
+        function updatePopCount() {
+            document.getElementById('popCount').textContent = popCount;
+        }
+
+        function updateComboCount() {
+            document.getElementById('comboCount').textContent = comboCount;
+        }
+
+        function updateTime() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timeElapsed').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Show combo indicator
+        function showComboIndicator(text) {
+            const indicator = document.getElementById('comboIndicator');
+            indicator.textContent = text;
+            indicator.classList.add('show');
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 1000);
+        }
+
+        // Check achievements
+        function checkAchievements() {
+            const achievements = [
+                { count: 10, title: 'Combo Starter!', desc: 'Reached 10x combo' },
+                { count: 25, title: 'Combo Master!', desc: 'Reached 25x combo' },
+                { count: 50, title: 'Combo Legend!', desc: 'Reached 50x combo' },
+                { count: 100, title: 'Pop Star!', desc: 'Popped 100 bubbles' },
+                { count: 500, title: 'Bubble Destroyer!', desc: 'Popped 500 bubbles' },
+                { count: 1000, title: 'Bubble Wrapping God!', desc: 'Popped 1000 bubbles' }
+            ];
+            
+            achievements.forEach(achievement => {
+                if ((achievement.count <= comboCount || achievement.count <= popCount) && 
+                    !localStorage.getItem(`achievement_${achievement.count}`)) {
+                    showAchievement(achievement.title, achievement.desc);
+                    localStorage.setItem(`achievement_${achievement.count}`, 'true');
+                }
+            });
+        }
+
+        // Show achievement notification
+        function showAchievement(title, desc) {
+            const achievementEl = document.getElementById('achievement');
+            document.getElementById('achievementTitle').textContent = title;
+            document.getElementById('achievementDesc').textContent = desc;
+            
+            achievementEl.classList.add('show');
+            
+            setTimeout(() => {
+                achievementEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Toggle sound
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const soundToggle = document.getElementById('soundToggle');
+            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            soundToggle.classList.toggle('muted', !soundEnabled);
+        }
+
+        // Toggle auto pop mode
+        function toggleAutoPop() {
+            autoPopMode = !autoPopMode;
+            
+            if (autoPopMode) {
+                autoPopInterval = setInterval(() => {
+                    const bubbles = document.querySelectorAll('.bubble:not(.popping)');
+                    if (bubbles.length > 0) {
+                        const randomBubble = bubbles[Math.floor(Math.random() * bubbles.length)];
+                        randomBubble.click();
+                    }
+                }, 200);
+            } else {
+                clearInterval(autoPopInterval);
+            }
+        }
+
+        // Reset game
+        function resetGame() {
+            popCount = 0;
+            comboCount = 0;
+            startTime = Date.now();
+            updatePopCount();
+            updateComboCount();
+            
+            // Reset all bubbles
+            const bubbles = document.querySelectorAll('.bubble');
+            bubbles.forEach(bubble => {
+                bubble.classList.remove('popping', 'regenerating');
+                bubble.dataset.popped = 'false';
+            });
+        }
+
+        // Initialize bubbles
+        function initializeBubbles() {
+            const container = document.getElementById('bubbleContainer');
+            // Clear existing bubbles
+            container.innerHTML = '';
+            
+            // Calculate the number of bubbles that fit in the container
+            const containerStyle = window.getComputedStyle(container);
+            const paddingLeft = parseFloat(containerStyle.paddingLeft);
+            const paddingRight = parseFloat(containerStyle.paddingRight);
+            const paddingTop = parseFloat(containerStyle.paddingTop);
+            const paddingBottom = parseFloat(containerStyle.paddingBottom);
+            
+            const availableWidth = container.clientWidth - paddingLeft - paddingRight;
+            const availableHeight = container.clientHeight - paddingTop - paddingBottom;
+            
+            const bubbleSize = 50; // Base size
+            const gap = 8; // Gap between bubbles
+            
+            // Calculate how many bubbles fit horizontally and vertically
+            const bubblesPerRow = Math.floor(availableWidth / (bubbleSize + gap));
+            const numberOfRows = Math.floor(availableHeight / (bubbleSize + gap));
+            const totalBubbles = bubblesPerRow * numberOfRows;
+            
+            // Generate the calculated number of bubbles
+            for (let i = 0; i < totalBubbles; i++) {
+                container.appendChild(createBubble());
+            }
+            
+            // If no bubbles were created (container too small), create at least 20
+            if (totalBubbles === 0) {
+                for (let i = 0; i < 20; i++) {
+                    container.appendChild(createBubble());
+                }
+            }
+        }
+
+        // Start the game
+        window.addEventListener('load', () => {
+            // Initialize bubbles after a short delay to ensure proper rendering
+            setTimeout(() => {
+                initializeBubbles();
+                setInterval(updateTime, 1000);
+            }, 100);
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // Debounce resize events
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(() => {
+                initializeBubbles();
+            }, 250);
+        });
+
+        // Check if ads are loaded and hide placeholders
+        setTimeout(() => {
+            const adContainers = document.querySelectorAll('.ad-container');
+            adContainers.forEach(container => {
+                const ad = container.querySelector('.kakao_ad_area');
+                if (ad && ad.offsetHeight > 0) {
+                    const placeholder = container.querySelector('.ad-placeholder');
+                    if (placeholder) {
+                        placeholder.style.display = 'none';
+                    }
+                }
+            });
+        }, 3000);
+    </script>
+</body>
+</html>
