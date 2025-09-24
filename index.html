@@ -361,6 +361,47 @@
             right: 16px;
         }
 
+        /* Banner container styles */
+        .banner-container {
+            position: fixed;
+            width: 160px;
+            z-index: 999;
+            display: flex !important;
+            align-items: flex-start;
+            pointer-events: auto;
+        }
+
+        #leftBanner {
+            left: 10px;
+            top: 690px; /* 카카오 광고 아래 위치 */
+        }
+
+        #rightBanner {
+            right: 16px;
+            top: 690px; /* 카카오 광고 아래 위치 */
+        }
+
+        .banner-link {
+            display: block;
+            width: 100%;
+            text-decoration: none;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .banner-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .banner-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         /* Ad placeholder styling */
         .ad-placeholder {
             width: 100%;
@@ -449,8 +490,12 @@
                 padding: 0.2rem 0.6rem;
             }
 
-            /* Hide ads on mobile devices */
+            /* Hide ads and banners on mobile devices */
             .ad-container {
+                display: none !important;
+            }
+            
+            .banner-container {
                 display: none !important;
             }
         }
@@ -532,6 +577,20 @@
              data-ad-width="160"
              data-ad-height="600"></ins>
         <div class="ad-placeholder">Ad Loading...</div>
+    </div>
+
+    <!-- Left Banner -->
+    <div id="leftBanner" class="banner-container">
+        <a href="https://ydztsbiml3.sens.kr" target="_blank" class="banner-link">
+            <img src="Public/chimhyang.png" alt="침향 배너" class="banner-image">
+        </a>
+    </div>
+    
+    <!-- Right Banner -->
+    <div id="rightBanner" class="banner-container">
+        <a href="https://redslwsq.adpt.kr" target="_blank" class="banner-link">
+            <img src="Public/Esabang.png" alt="이사방 배너" class="banner-image">
+        </a>
     </div>
 
     <script>
